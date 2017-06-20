@@ -14,11 +14,11 @@ printed by the console.
 To proceed with the renaming, uncomment the two lines containing 'shutil.move' by removing the '#' at the start of the line
 IMPORTANT:
 All TV Shows must be in the following format:
-    * Each season of the show must be in its own folder.
-    * All episodes of each season must be in ascending order.
-    * If there are subtitles, each episode's subtitle must be next to that episode
-    * No problems if some episodes have no subtitles and some do
-    * Only .mkv and .mp4 video files and .ass, .srt and .sub subtitle files are supported. Other files may work but are untested.
+    * Each season of the show must be in its own folder named 'Season X' where X is the season number.
+    * All episodes of each season must be in ascending order. So Episode 1, Episode 2, Episode 3 etc
+    * If there are subtitles, each episode's subtitle must be sorted after that episode. So episode X, subtitle X, episode Y, subtitle Y
+    * There is no problem if only some episodes have subtitles. So Episode X, Episode Y, Episode Z, Subtitle Z is fine.
+    * Only .mkv and .mp4 video files and .srt and .sub subtitle files are supported.
 '''
 
 import os, shutil, re, json, requests, datetime
@@ -27,14 +27,14 @@ import os, shutil, re, json, requests, datetime
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '''
 #Set folder path here
-folderPath = r"J:\Shows\Live-Action\Breaking Bad"
+folderPath = r"J:\Shows\Live-Action\Community"
 '''
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '''
 
 #Get show name from folder path
 showName = os.path.basename(folderPath)
-#Regex expression to get the file extension, episode number & name and to check if the episode name has invalid characters
+#Regex expressions to get the file extension, episode number & name and to check if the episode name has invalid characters
 extensionCheck = re.compile(r'\.[a-z0-9]{3,4}$')
 episodeFormat = re.compile(r'(^Season\s\d)(::)(.*$)')
 invalidChars = re.compile(r'[\/?*><|]+')
@@ -102,56 +102,79 @@ def getCurrentSeasonList(seasons, episodeList):
 def generatePath(fileName):
     return folderPath + '\\' + seasons + '\\' + fileName
 
+def checkFileType(fileExt):
+    if(fileExt == '.mkv' or fileExt == '.mp4' or fileExt == '.avi'):
+        return 'video'
+    elif(fileExt == '.srt' or fileExt == '.sub'):
+        return 'sub'
+
 #get episode list and number of seasons on disk
 episodeList = getEpisodeList()
 seasonList = getSeasonList()
 
+#Open logfile
 changeLog = open(folderPath + '\\' + 'changelog.txt', 'a', encoding='utf-8')
 changeLog.write('\nChanges made on ' + date + ':\n')
 
+renameCount = 0
+errorCount = 0
 #For each season in the folder
 for seasons in seasonList:
+    #Get list of episodes in this season
     currentSeason = getCurrentSeasonList(seasons, episodeList)
     #Set the current episode index as 0
     episodeCount = 0
-    flag = 0
+    previousFile = 'none'
     #for all the files in the folder
     for files in os.listdir(folderPath + '\\' + seasons):
-        print('Renaming!')
-        #Check the extension
-        fileExt = extensionCheck.search(files).group()
-        #If it is a video file
-        if(fileExt == '.mkv' or fileExt == '.mp4'):
-            oldPath = generatePath(files)
-            newPath = generatePath(currentSeason[episodeCount] + fileExt)
-            try:
-                #shutil.move(oldPath, newPath)
-                print(oldPath, newPath, '', sep='\n')
-                changeLog.write('\n' + oldPath + '\n' + newPath + '\n')
-                #Flag case. Since the files are in alphabetical order, .ass files will occur before it's corresponding video file
-                #Whereas all other subtitle files occur after the video files. So in case of a .ass file, we increment episode count only after the video file
-                if(flag == 1):
-                    flag = 0
+        #Check if extension exists
+        if(extensionCheck.search(files)):
+            print('Renaming...')
+            #Retrieve the extension
+            fileExt = extensionCheck.search(files).group()
+            #If it is a video file
+            if(checkFileType(fileExt) == 'video'):
+                #If the previous file was also a video, it means no subtitle file existed for the previous file. So we increment the count
+                if(previousFile == 'video'):
                     episodeCount += 1
-            except:
-                changeLog.write('\nError renaming ' + oldPath + 'to' + newPath + '!')
-                print('\nError renaming ' + oldPath + 'to' + newPath + '!')
-        #If it is a subtitle file
-        elif(fileExt == '.srt' or fileExt == '.sub' or fileExt == '.ass'):
-            oldPath = generatePath(files)
-            newPath = generatePath(currentSeason[episodeCount] + fileExt)
-            try:
-                #shutil.move(oldPath, newPath)
-                print(oldPath, newPath, '', sep='\n')
-                #changeLog.write('\n' + oldPath + '\n' + newPath + '\n')
-                #See Flag case above
-                if(fileExt == '.ass'):
-                    flag = 1
-                    episodeCount -=1
-            except:
-                changeLog.write('\nError renaming ' + oldPath + 'to' + newPath + '!')
-                print('\nError renaming ' + oldPath + 'to' + newPath + '!')
-            episodeCount += 1
+                #Generate the absolute path of the file to rename and the new name
+                oldPath = generatePath(files)
+                newPath = generatePath(currentSeason[episodeCount] + fileExt)
+                #Try to rename the file, print it in the console and log it. Increment renameCount
+                try:
+                    '''UNCOMMENT THIS TO RENAME'''
+                    #shutil.move(oldPath, newPath)
+                    '''!!!!!!!!!!!!!!!!!!!!!!!!'''
+                    print(oldPath, newPath, '', sep='\n')
+                    changeLog.write('\n' + oldPath + '\n' + newPath + '\n')
+                    renameCount += 1
+                #If rename fails, print error message, log it and increment errorCount
+                except:
+                    changeLog.write('\nError renaming ' + oldPath + 'to' + newPath + '!')
+                    print('\nError renaming ' + oldPath + 'to' + newPath + '!')
+                    errorCount += 1
+            #If it is a subtitle file
+            elif(checkFileType(fileExt) == 'sub'):
+                #Generate the absolute path of the file to rename and the new name
+                oldPath = generatePath(files)
+                newPath = generatePath(currentSeason[episodeCount] + fileExt)
+                #Try to rename the file, print it in the console and log it. Increment renameCount
+                try:
+                    '''UNCOMMENT THIS TO RENAME'''
+                    #shutil.move(oldPath, newPath)
+                    '''!!!!!!!!!!!!!!!!!!!!!!!!'''
+                    print(oldPath, newPath, '', sep='\n')
+                    changeLog.write('\n' + oldPath + '\n' + newPath + '\n')
+                    renameCount += 1
+                #If rename fails, print error message, log it and increment errorCount
+                except:
+                    changeLog.write('\nError renaming ' + oldPath + 'to' + newPath + '!')
+                    print('\nError renaming ' + oldPath + 'to' + newPath + '!')
+                    errorCount += 1
+                #Increment episode count after each subtitle file since subtitle files are always after the its corresponding video file
+                episodeCount += 1
+            #Set the value of previousFile to the current file extension for future use
+            previousFile = checkFileType(fileExt)
 
-print('Completed!')
+print('Successfully renamed ' + str(renameCount) + ' files with ' + str(errorCount) + ' errors!')
 changeLog.close()
