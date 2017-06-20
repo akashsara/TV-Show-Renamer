@@ -1,5 +1,6 @@
 #!python3
 '''
+GENERAL INFORMATION:
 Uses the TvMaze API to retrieve a list of episodes of a TV series and renames the files on disk to the following format:
     Episode X - Episode Name
 For safety's sake, the actual rename commands have been commented out. The console will simply print the old and new names of each file
