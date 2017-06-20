@@ -2,8 +2,7 @@
 '''
 Uses the TvMaze API to retrieve a list of episodes of a TV series and renames the files on disk to the following format:
     Episode X - Episode Name
-You need to only set the path of the TV show in the area marked below.
-For the safety's sake, the actual rename commands have been commented out. The console will simply print the old and new names of each file
+For safety's sake, the actual rename commands have been commented out. The console will simply print the old and new names of each file
 in the following format:
     Old Name
     New Name
@@ -11,7 +10,14 @@ in the following format:
 If you are unfamiliar with the console, a changelog.txt file will also appear in the directory you selected. This file contains the same text
 printed by the console.
 
-To proceed with the renaming, uncomment the two lines containing 'shutil.move' by removing the '#' at the start of the line
+REQUIREMENTS:
+    * python3
+    * requests module
+
+INSTRUCTIONS:
+    1. Set the path of the TV show you want to rename in the area indicated.
+    2. To proceed with the renaming, uncomment the two lines containing 'shutil.move' by removing the '#' at the start of the line
+
 IMPORTANT:
 All TV Shows must be in the following format:
     * Each season of the show must be in its own folder named 'Season X' where X is the season number.
