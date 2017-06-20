@@ -34,7 +34,7 @@ import os, shutil, re, json, requests, datetime
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '''
 #Set folder path here
-folderPath = r"J:\Shows\Live-Action\Community"
+folderPath = r""
 '''
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '''
@@ -50,6 +50,7 @@ now = datetime.datetime.now()
 date = now.strftime('%d-%m-%Y')
 
 def getEpisodeList():
+    print('Connecting to server...')
     #Search TVMaze for show and find its ID
     showURL = r'http://api.tvmaze.com/search/shows?q=' + showName
     response = requests.get(showURL)
@@ -57,12 +58,14 @@ def getEpisodeList():
     showInfo = json.loads(response.text)
     showID = showInfo[0]['show']['id']
 
+    print('Retrieving data...')
     #Using the ID, get the details of every episode
     episodesURL = r'http://api.tvmaze.com/shows/%s/episodes' %showID
     response = requests.get(episodesURL)
     response.raise_for_status()
     episodeInfo = json.loads(response.text)
 
+    print('Data retrieved!')
     #Create an empty list
     episodeList = []
 
@@ -87,6 +90,7 @@ def getEpisodeList():
 
 def getSeasonList():
     #initialize empty list
+    print('Analyzing folder...')
     seasonList = []
     for folders, subfolders, files in os.walk(folderPath):
         #Get number of seasons and add to list
