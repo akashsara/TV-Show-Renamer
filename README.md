@@ -13,7 +13,7 @@ in the following format:
 
 >New Name
 
-> 
+>
 
 If you are unfamiliar with the console, a changelog.txt file will also appear in the directory you selected. This file contains the same text
 printed by the console.
@@ -32,6 +32,7 @@ printed by the console.
 
 All TV Shows must be in the following format:
 
+* The entire show must be within a folder named by the original name of the show. So 'Arrow' or 'The Flash' for example
 * Each season of the show must be in its own folder named 'Season X' where X is the season number.
 * All episodes of each season must be in ascending order. So Episode 1, Episode 2, Episode 3 etc
 * If there are subtitles, each episode's subtitle must be sorted after that episode. So episode X, subtitle X, episode Y, subtitle Y
