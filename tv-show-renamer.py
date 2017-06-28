@@ -120,6 +120,20 @@ def checkFileType(fileExt):
     elif(fileExt == '.srt' or fileExt == '.sub'):
         return 'sub'
 
+def renameFiles(oldPath, newPath):
+    '''UNCOMMENT THIS TO RENAME'''
+    #shutil.move(oldPath, newPath)
+    '''!!!!!!!!!!!!!!!!!!!!!!!!'''
+    print(oldPath, newPath, '', sep='\n')
+    changeLog.write('\n' + oldPath + '\n' + newPath + '\n')
+    return 1
+
+
+def renameError(oldPath, newPath):
+    changeLog.write('\nError renaming ' + oldPath + 'to' + newPath + '!')
+    print('\nError renaming ' + oldPath + 'to' + newPath + '!')
+    return 1
+
 #get episode list and number of seasons on disk
 episodeList = getEpisodeList()
 seasonList = getSeasonList()
@@ -130,6 +144,7 @@ changeLog.write('\nChanges made on ' + date + ':\n')
 
 renameCount = 0
 errorCount = 0
+
 #For each season in the folder
 for seasons in seasonList:
     #Get list of episodes in this season
@@ -144,47 +159,23 @@ for seasons in seasonList:
             print('Renaming...')
             #Retrieve the extension
             fileExt = extensionCheck.search(files).group()
-            #If it is a video file
-            if(checkFileType(fileExt) == 'video'):
+            #If it is a video file or a subtitle file
+            if(checkFileType(fileExt) == 'video' or checkFileType(fileExt) == 'sub'):
                 #If the previous file was also a video, it means no subtitle file existed for the previous file. So we increment the count
-                if(previousFile == 'video'):
+                if(checkFileType(fileExt) == 'video' and previousFile == 'video'):
                     episodeCount += 1
                 #Generate the absolute path of the file to rename and the new name
                 oldPath = generatePath(files)
                 newPath = generatePath(currentSeason[episodeCount] + fileExt)
                 #Try to rename the file, print it in the console and log it. Increment renameCount
                 try:
-                    '''UNCOMMENT THIS TO RENAME'''
-                    #shutil.move(oldPath, newPath)
-                    '''!!!!!!!!!!!!!!!!!!!!!!!!'''
-                    print(oldPath, newPath, '', sep='\n')
-                    changeLog.write('\n' + oldPath + '\n' + newPath + '\n')
-                    renameCount += 1
+                    renameCount += renameFiles(oldPath, newPath)
                 #If rename fails, print error message, log it and increment errorCount
                 except:
-                    changeLog.write('\nError renaming ' + oldPath + 'to' + newPath + '!')
-                    print('\nError renaming ' + oldPath + 'to' + newPath + '!')
-                    errorCount += 1
-            #If it is a subtitle file
-            elif(checkFileType(fileExt) == 'sub'):
-                #Generate the absolute path of the file to rename and the new name
-                oldPath = generatePath(files)
-                newPath = generatePath(currentSeason[episodeCount] + fileExt)
-                #Try to rename the file, print it in the console and log it. Increment renameCount
-                try:
-                    '''UNCOMMENT THIS TO RENAME'''
-                    #shutil.move(oldPath, newPath)
-                    '''!!!!!!!!!!!!!!!!!!!!!!!!'''
-                    print(oldPath, newPath, '', sep='\n')
-                    changeLog.write('\n' + oldPath + '\n' + newPath + '\n')
-                    renameCount += 1
-                #If rename fails, print error message, log it and increment errorCount
-                except:
-                    changeLog.write('\nError renaming ' + oldPath + 'to' + newPath + '!')
-                    print('\nError renaming ' + oldPath + 'to' + newPath + '!')
-                    errorCount += 1
+                    errorCount += renameError(oldPath, newPath)
                 #Increment episode count after each subtitle file since subtitle files are always after the its corresponding video file
-                episodeCount += 1
+                if(checkFileType(fileExt) == 'sub'):
+                    episodeCount += 1
             #Set the value of previousFile to the current file extension for future use
             previousFile = checkFileType(fileExt)
 
