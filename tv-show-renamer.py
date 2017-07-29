@@ -35,7 +35,7 @@ import os, shutil, re, json, requests, datetime
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '''
 #Set folder path here
-folderPath = r""
+folderPath = r"J:\Shows\Live-Action\The Big Bang Theory"
 '''
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '''
@@ -44,7 +44,7 @@ folderPath = r""
 showName = os.path.basename(folderPath)
 #Regex expressions to get the file extension, episode number & name and to check if the episode name has invalid characters
 extensionCheck = re.compile(r'\.[a-z0-9]{3,4}$')
-episodeFormat = re.compile(r'(^Season\s\d)(::)(.*$)')
+episodeFormat = re.compile(r'(^Season\s\d{1,2})(::)(.*$)')
 invalidChars = re.compile(r'[\/?*><|]+')
 #Date for changelog
 now = datetime.datetime.now()
@@ -92,32 +92,25 @@ def getEpisodeList():
 def getSeasonList():
     #initialize empty list
     print('Analyzing folder...')
-    seasonList = []
-    for folders, subfolders, files in os.walk(folderPath):
-        #Get number of seasons and add to list
-        seasonList.append(subfolders)
+    seasonList = [subfolders for folders, subfolders, files in os.walk(folderPath)]
     return seasonList[0]
 
 def getCurrentSeasonList(seasons, episodeList):
-    #Empty the list of episodes in the current season
-    currentSeason = []
-    #Add every episode from the list of this season's episodes to the currentSeason list
-    for episodes in episodeList:
-        #Get the season the episode is from
-        episodeData = episodeFormat.search(episodes)
-        #Check if episode is in the current season
-        if seasons == episodeData[1]:
-            #Add it to the list
-            currentSeason.append(episodeData[3])
+    #Get the season the episode is from, check if episode is in the current season and add it to the list
+    currentSeason = [
+        episodeFormat.search(episodes)[3]
+        for episodes in episodeList
+        if seasons == episodeFormat.search(episodes)[1]
+    ]
     return currentSeason
 
 def generatePath(fileName):
     return folderPath + '\\' + seasons + '\\' + fileName
 
 def checkFileType(fileExt):
-    if(fileExt == '.mkv' or fileExt == '.mp4' or fileExt == '.avi'):
+    if(fileExt in ['.mkv', '.mp4', '.avi']):
         return 'video'
-    elif(fileExt == '.srt' or fileExt == '.sub'):
+    elif(fileExt in ['.srt', '.sub']):
         return 'sub'
 
 def renameFiles(oldPath, newPath):
@@ -127,7 +120,6 @@ def renameFiles(oldPath, newPath):
     print(oldPath, newPath, '', sep='\n')
     changeLog.write('\n' + oldPath + '\n' + newPath + '\n')
     return 1
-
 
 def renameError(oldPath, newPath):
     changeLog.write('\nError renaming ' + oldPath + 'to' + newPath + '!')
